@@ -1,15 +1,36 @@
 // 请求地址
-const apiHostUrl = process.env.API_HOST_URL ? process.env.API_HOST_URL : "https://mock.apipost.net/mock/2ac781c5b464000";
+const apiHostUrl = process.env.API_HOST_URL ? process.env.API_HOST_URL : "API_HOST_URL=http://localhost:8091";
+
+/**
+ * 装配抽奖
+ * @param strategyId
+ */
+export const strategyArmory = (strategyId: number) =>{
+    return fetch(`${apiHostUrl}/api/v1/raffle/strategy_armory?strategyId=${strategyId}`,{
+        method:'get',
+        headers:{
+            'Content-Type':'application/json'
+        }
+    })
+}
 /**
  * 查询抽奖奖品列表
  * @param strategyId 策略ID
  */
 export const queryRaffleAwardList = (strategyId: number) => {
     try {
-        return fetch(`${apiHostUrl}/api/v1/raffle/query_raffle_award_list?strategyId=${strategyId}&apipost_id=2c78b5b7727002`, {
-            method: 'get',
+        //&apipost_id=2c78b5b7727002
+        return fetch(`${apiHostUrl}/api/v1/raffle/query_raffle_award_list`, {
+            method: 'post',
+            headers:{
+                'Content-Type':'application/json'
+            },
+            body: JSON.stringify({
+                strategyId: strategyId
+            })
 
         });
+
     } catch (error) {
         return fetch("{\n" +
             "    \"code\": \"0001\",\n" +
@@ -35,8 +56,14 @@ export const queryRaffleAwardList = (strategyId: number) => {
  */
 export const randomRaffle = (strategyId: number) => {
     try {
-        return fetch(`${apiHostUrl}/api/v1/raffle/random_raffle?strategyId=${strategyId}&apipost_id=2c7ea9c232701f`, {
-            method: 'get',
+        return fetch(`${apiHostUrl}/api/v1/raffle/random_raffle`, {
+            method: 'post',
+            headers:{
+                'Content-Type':'application/json'
+            },
+            body: JSON.stringify({
+                strategyId: strategyId
+            })
 
         })
     } catch (error) {
