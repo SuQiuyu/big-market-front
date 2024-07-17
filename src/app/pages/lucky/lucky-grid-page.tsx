@@ -1,68 +1,119 @@
-"use client";
+"use client"
 
 import React, {useState, useRef, useEffect} from 'react'
 // @ts-ignore
 import {LuckyGrid} from '@lucky-canvas/react'
-import {queryRaffleAwardList, randomRaffle} from '@/apis'
-import {RaffleAwardVO} from "@/types/RaffleAwardVO";
+import {draw, queryRaffleAwardList} from "@/apis";
 
+/**
+ * 大转盘文档：https://100px.net/docs/grid.html
+ * @constructor
+ */
 export function LuckyGridPage() {
     const [prizes, setPrizes] = useState([{}])
     const myLucky = useRef()
-    // 背景
-    // const [blocks] = useState([
-    //     {padding: '10px', background: '#869cfa',imgs: [{src: "https://bugstack.cn/images/system/blog-03.png"}]}
-    // ])
 
-    const [buttons] = useState([
-        {x: 1, y: 1, background: "#7f95d1", fonts: [{text: '开始', top: '35%'}]}
-    ])
-
-    const [defaultStyle] = useState([{background: "#b8c5f2"}])
-
-    //查询奖品列表
     const queryRaffleAwardListHandle = async () => {
         const queryParams = new URLSearchParams(window.location.search);
-        const strategyId = Number(queryParams.get('strategyId'));
-        const result = await queryRaffleAwardList(strategyId);
+        const userId = String(queryParams.get('userId'));
+        const activityId = Number(queryParams.get('activityId'));
+        const result = await queryRaffleAwardList(userId, activityId);
         const {code, info, data} = await result.json();
         if (code != "0000") {
             window.alert("获取抽奖奖品列表失败 code:" + code + " info:" + info)
             return;
         }
-        const prizes = data.map((award: RaffleAwardVO, index: number) => {
-            const background = '#869cfa'
-            const coordinates = [
-                {x: 0, y: 0}, {x: 1, y: 0}, {x: 2, y: 0}, {x: 2, y: 1},
-                {x: 2, y: 2}, {x: 1, y: 2}, {x: 0, y: 2}, {x: 0, y: 1}
-            ];
-            const {x, y} = coordinates[index];
-            return {
-                x: x,
-                y: y,
-                fonts: [{id: award.awardId, text: award.awardTitle, top: '35px'}]
-            };
-        });
-        //设置奖品数据
+
+        // 创建一个新的奖品数组
+        const prizes = [
+            {x: 0, y: 0, fonts: [{text: data[0].awardTitle, top: '80%', fontSize: '12px', fontWeight: '800'}], imgs: [{src: "/raffle-award-00.png", width: "100px", height: "100px", activeSrc: "/raffle-award.png"}]},
+            {x: 1, y: 0, fonts: [{text: data[1].awardTitle, top: '80%', fontSize: '12px', fontWeight: '800'}], imgs: [{src: "/raffle-award-01.png", width: "100px", height: "100px", activeSrc: "/raffle-award.png"}]},
+            {x: 2, y: 0, fonts: [{text: data[2].awardTitle, top: '80%', fontSize: '12px', fontWeight: '800'}], imgs: [{src: "/raffle-award-02.png", width: "100px", height: "100px", activeSrc: "/raffle-award.png"}]},
+            {x: 2, y: 1, fonts: [{text: data[3].awardTitle, top: '80%', fontSize: '12px', fontWeight: '800'}], imgs: [{src: "/raffle-award-12.png", width: "100px", height: "100px", activeSrc: "/raffle-award.png"}]},
+            {
+                x: 2,
+                y: 2,
+                fonts: [{
+                    text: data[4].isAwardUnlock ? data[4].awardTitle : '再抽奖' + data[4].waitUnlockCount + '次解锁',
+                    top: '80%',
+                    fontSize: '12px',
+                    fontWeight: '800'
+                }],
+                imgs: [{
+                    src: data[4].isAwardUnlock ? "/raffle-award-22.png" : "/raffle-award-22-lock.png",
+                    width: "100px",
+                    height: "100px",
+                    activeSrc: "/raffle-award.png"
+                }]
+            },
+            {
+                x: 1,
+                y: 2,
+                fonts: [{
+                    text: data[5].isAwardUnlock ? data[5].awardTitle : '再抽奖' + data[5].waitUnlockCount + '次解锁',
+                    top: '80%',
+                    fontSize: '12px',
+                    fontWeight: '800'
+                }],
+                imgs: [{
+                    src: data[5].isAwardUnlock ? "/raffle-award-21.png" : "/raffle-award-21-lock.png",
+                    width: "100px",
+                    height: "100px",
+                    activeSrc: "/raffle-award.png"
+                }]
+            },
+            {
+                x: 0,
+                y: 2,
+                fonts: [{
+                    text: data[6].isAwardUnlock ? data[6].awardTitle : '再抽奖' + data[6].waitUnlockCount + '次解锁',
+                    top: '80%',
+                    fontSize: '12px',
+                    fontWeight: '800'
+                }],
+                imgs: [{
+                    src: data[6].isAwardUnlock ? "/raffle-award-20.png" : "/raffle-award-20-lock.png",
+                    width: "100px",
+                    height: "100px",
+                    activeSrc: "/raffle-award.png"
+                }]
+            },
+            {x: 0, y: 1, fonts: [{text: data[7].awardTitle, top: '80%', fontSize: '12px', fontWeight: '800'}], imgs: [{src: "/raffle-award-10.png", width: "100px", height: "100px", activeSrc: "/raffle-award.png"}]},
+        ]
+
+        // 设置奖品数据
         setPrizes(prizes)
+
     }
-    //调用随机抽奖
+
     const randomRaffleHandle = async () => {
         const queryParams = new URLSearchParams(window.location.search);
-        const strategyId = Number(queryParams.get('strategyId'));
-        const result = await randomRaffle(strategyId);
+        const userId = String(queryParams.get('userId'));
+        const activityId = Number(queryParams.get('activityId'));
+
+        let result = await draw(userId, activityId);
         const {code, info, data} = await result.json();
         if (code != "0000") {
             window.alert("随机抽奖失败 code:" + code + " info:" + info)
             return;
         }
-        return data.awardIndex-1;
+
+        // 为了方便测试，mock 的接口直接返回 awardIndex 也就是奖品列表中第几个奖品。
+        return data.awardIndex - 1;
     }
+
+    const [buttons] = useState([
+        {x: 1, y: 1, background: "#7f95d1", shadow:'3', imgs: [{src: "/raffle-button.png", width: "100px", height: "100px"}]}
+    ])
+
+    const [defaultStyle] = useState([{background: "#b8c5f2"}])
+
     useEffect(() => {
         queryRaffleAwardListHandle().then(r => {
         });
     }, [])
-    return <div>
+
+    return <>
         <LuckyGrid
             ref={myLucky}
             width="300px"
@@ -76,21 +127,26 @@ export function LuckyGridPage() {
                 // @ts-ignore
                 myLucky.current.play()
                 setTimeout(() => {
+                    // 抽奖接口
                     randomRaffleHandle().then(prizeIndex => {
-                        // @ts-ignore
-                        myLucky.current.stop(prizeIndex);
-                    });
+                            // @ts-ignore
+                            myLucky.current.stop(prizeIndex);
+                        }
+                    );
                 }, 2500)
             }}
             onEnd={
                 // @ts-ignore
                 prize => {
-                    alert('恭喜你抽到【' + prize.fonts[0].text + '】奖品ID【' + prize.fonts[0].id + '】')
+                    // 加载数据
+                    queryRaffleAwardListHandle().then(r => {
+                    });
+                    // 展示奖品
+                    alert('恭喜抽中奖品💐【' + prize.fonts[0].text+'】')
                 }
             }>
 
         </LuckyGrid>
-    </div>
+    </>
 
 }
-

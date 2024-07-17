@@ -1,0 +1,1 @@
+docker build -t asu12138/big-market-front-app:1.2 .
